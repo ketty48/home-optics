@@ -1,29 +1,44 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface IOrderItem {
-  product: mongoose.Types.ObjectId;
-  name: string;
-  image: string;
-  price: number;
-  quantity: number;
-}
+const EAST_AFRICAN_COUNTRIES = [
+  'Rwanda',
+  'Kenya',
+  'Uganda',
+  'Tanzania',
+  'Burundi',
+  'South Sudan',
+  'Democratic Republic of the Congo',
+  'Somalia'
+];
 
 export interface IOrder extends Document {
   user: mongoose.Types.ObjectId;
-  orderItems: IOrderItem[];
+  orderItems: Array<{
+    name: string;
+    qty: number;
+    image: string;
+    price: number;
+    product: mongoose.Types.ObjectId;
+  }>;
   shippingAddress: {
-    street: string;
+    address: string;
     city: string;
-    state: string;
+    postalCode: string;
     country: string;
-    zipCode: string;
+    phone: string;
   };
+  guestDetails?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  orderNotes?: string;
   paymentMethod: string;
   paymentResult?: {
     id: string;
     status: string;
-    updateTime: string;
-    emailAddress: string;
+    update_time: string;
+    email_address: string;
   };
   itemsPrice: number;
   taxPrice: number;
@@ -33,9 +48,7 @@ export interface IOrder extends Document {
   paidAt?: Date;
   isDelivered: boolean;
   deliveredAt?: Date;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  trackingNumber?: string;
-  notes?: string;
+  status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -44,100 +57,74 @@ const orderSchema = new Schema<IOrder>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      required: true,
-      ref: 'User'
+      required: false,
+      ref: 'User',
     },
     orderItems: [
       {
+        name: { type: String, required: true },
+        qty: { type: Number, required: true },
+        image: { type: String, required: true },
+        price: { type: Number, required: true },
         product: {
           type: Schema.Types.ObjectId,
           required: true,
-          ref: 'Product'
+          ref: 'Product',
         },
-        name: { type: String, required: true },
-        image: { type: String, required: true },
-        price: { type: Number, required: true, min: 0 },
-        quantity: { type: Number, required: true, min: 1 }
-      }
+      },
     ],
     shippingAddress: {
-      street: { type: String, required: true },
+      address: { type: String, required: true },
       city: { type: String, required: true },
-      state: { type: String, required: true },
-      country: { type: String, required: true, default: 'Rwanda' },
-      zipCode: { type: String }
+      postalCode: { type: String, required: true },
+      country: { 
+        type: String, 
+        required: true,
+        enum: EAST_AFRICAN_COUNTRIES,
+        default: 'Rwanda'
+      },
+      phone: { type: String, required: true },
+    },
+    guestDetails: {
+      firstName: { type: String },
+      lastName: { type: String },
+      email: { type: String },
+    },
+    orderNotes: {
+      type: String,
+      required: false,
     },
     paymentMethod: {
       type: String,
       required: true,
-      enum: ['stripe', 'momo', 'cod']
     },
     paymentResult: {
-      id: String,
-      status: String,
-      updateTime: String,
-      emailAddress: String
+      id: { type: String },
+      status: { type: String },
+      update_time: { type: String },
+      email_address: { type: String },
     },
-    itemsPrice: {
-      type: Number,
-      required: true,
-      min: 0,
-      default: 0
-    },
-    taxPrice: {
-      type: Number,
-      required: true,
-      min: 0,
-      default: 0
-    },
-    shippingPrice: {
-      type: Number,
-      required: true,
-      min: 0,
-      default: 0
-    },
-    totalPrice: {
-      type: Number,
-      required: true,
-      min: 0,
-      default: 0
-    },
-    isPaid: {
-      type: Boolean,
-      required: true,
-      default: false
-    },
-    paidAt: {
-      type: Date
-    },
-    isDelivered: {
-      type: Boolean,
-      required: true,
-      default: false
-    },
-    deliveredAt: {
-      type: Date
-    },
-    status: {
-      type: String,
-      enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
-      default: 'pending'
-    },
-    trackingNumber: {
-      type: String
-    },
-    notes: {
-      type: String,
-      maxlength: [500, 'Notes cannot exceed 500 characters']
-    }
+    itemsPrice: { type: Number, required: true, default: 0.0 },
+    taxPrice: { type: Number, required: true, default: 0.0 },
+    shippingPrice: { type: Number, required: true, default: 0.0 },
+    totalPrice: { type: Number, required: true, default: 0.0 },
+    isPaid: { type: Boolean, required: true, default: false },
+    paidAt: { type: Date },
+    isDelivered: { type: Boolean, required: true, default: false },
+    deliveredAt: { type: Date },
+    status: { type: String, required: true, default: 'Pending', enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'] },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 
-// Indexes
-orderSchema.index({ user: 1, createdAt: -1 });
-orderSchema.index({ status: 1 });
+// Middleware to enforce free delivery in Rwanda
+orderSchema.pre('save', function (next) {
+  if (this.shippingAddress && this.shippingAddress.country === 'Rwanda') {
+    this.shippingPrice = 0;
+  }
+  next();
+});
 
 export default mongoose.model<IOrder>('Order', orderSchema);

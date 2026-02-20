@@ -56,3 +56,48 @@ export interface PaginatedResponse<T> {
   totalPages: number;
   currentPage: number;
 }
+
+export interface OrderItem {
+  name: string;
+  qty: number;
+  image: string;
+  price: number;
+  product: string;
+}
+
+export interface Order {
+  _id: string;
+  user?: string | User;
+  orderItems: OrderItem[];
+  shippingAddress: {
+    address: string;
+    city: string;
+    postalCode: string;
+    country: string;
+    phone: string;
+  };
+  guestDetails?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  orderNotes?: string;
+  paymentMethod: string;
+  paymentResult?: {
+    id: string;
+    status: string;
+    update_time: string;
+    email_address: string;
+  };
+  itemsPrice: number;
+  taxPrice: number;
+  shippingPrice: number;
+  totalPrice: number;
+  isPaid: boolean;
+  paidAt?: string;
+  isDelivered: boolean;
+  deliveredAt?: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}

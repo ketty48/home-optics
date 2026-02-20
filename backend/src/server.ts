@@ -6,6 +6,11 @@ import compression from 'compression';
 import morgan from 'morgan';
 import connectDB from './config/database';
 import { errorHandler, notFound } from './middleware/error';
+import authRoutes from './routes/authRoutes';
+import productRoutes from './routes/productRoutes';
+import uploadRoutes from './routes/uploadRoutes';
+import orderRoutes from './routes/orderRoutes';
+import paymentRoutes from './routes/paymentRoutes';
 
 // Load env vars
 dotenv.config();
@@ -48,13 +53,13 @@ app.get('/health', (_req, res) => {
 });
 
 // Mount routers
-import authRoutes from './routes/authRoutes';
-import productRoutes from './routes/productRoutes';
-import uploadRoutes from './routes/uploadRoutes';
+
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // Error handler (must be last)
 app.use(notFound);

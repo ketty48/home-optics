@@ -8,6 +8,7 @@ interface AuthState {
   loadUser: () => Promise<void>;
   logout: () => void;
   setUserAfterLogin: (user: User) => void;
+  updateUser: (user: User) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -16,6 +17,10 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setUserAfterLogin: (user: User) => {
     set({ user, isAuthenticated: true });
+  },
+
+  updateUser: (user: User) => {
+    set({ user });
   },
 
   loadUser: async () => {

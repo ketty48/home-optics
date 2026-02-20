@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, Search, Menu, X, ChevronDown, Bell, Globe, MapPin } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { ShoppingCart, User, Search, Menu, X, ChevronDown, Package } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
 import apiClient from '../utils/api';
@@ -9,6 +9,8 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchCategory, setSearchCategory] = useState('All Categories');
+  const [showCategoriesMenu, setShowCategoriesMenu] = useState(false);
+  const categoriesMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuthStore();
   const totalItems = useCartStore((state) => state.getTotalItems());
@@ -27,6 +29,16 @@ const Header = () => {
       }
     };
     fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (categoriesMenuRef.current && !categoriesMenuRef.current.contains(e.target as Node)) {
+        setShowCategoriesMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +92,11 @@ const Header = () => {
 
           {/* Right Icons */}
           <div className="flex items-center gap-4 flex-shrink-0">
+            <Link to="/orders" style={{ color: '#475569', display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none' }} className="hover:text-blue-600">
+              <Package style={{ width: 24, height: 24 }} />
+              <span style={{ fontSize: 10, marginTop: 2, fontWeight: 600 }}>Orders</span>
+            </Link>
+
             <Link to="/cart" style={{ color: '#475569', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none' }} className="hover:text-blue-600">
               <div style={{ position: 'relative' }}>
                 <ShoppingCart style={{ width: 24, height: 24 }} />
@@ -101,6 +118,7 @@ const Header = () => {
                 <div className="group-hover:!block" style={{ display: 'none', position: 'absolute', right: 0, top: '100%', width: 200, backgroundColor: 'white', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.15)', padding: '8px 0', zIndex: 100 }}>
                   <Link to="/profile" style={{ display: 'block', padding: '8px 16px', fontSize: 13, color: '#333', textDecoration: 'none' }} className="hover:bg-blue-50">My Profile</Link>
                   <Link to="/orders" style={{ display: 'block', padding: '8px 16px', fontSize: 13, color: '#333', textDecoration: 'none' }} className="hover:bg-blue-50">My Orders</Link>
+                  <Link to="/pending-payments" style={{ display: 'block', padding: '8px 16px', fontSize: 13, color: '#333', textDecoration: 'none' }} className="hover:bg-blue-50">Pending Payments</Link>
                   <hr style={{ margin: '4px 0', borderColor: '#f0f0f0' }} />
                   <button onClick={logout} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 16px', fontSize: 13, color: '#e53e3e', background: 'none', border: 'none', cursor: 'pointer' }} className="hover:bg-red-50">Logout</button>
                 </div>
@@ -120,28 +138,58 @@ const Header = () => {
       </div>
 
       {/* Desktop Sub-Nav */}
-      <nav style={{ borderTop: '1px solid #e0e7ff' }} className="hidden md:block">
+      <nav style={{ borderTop: '1px solid #e0e7ff', backgroundColor: '#1a56db' }} className="hidden md:block">
         <div className="max-w-7xl mx-auto px-4 flex items-center">
-          <button style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', backgroundColor: '#f0f4ff', color: '#1a56db', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
-            <Menu style={{ width: 16, height: 16 }} />
-            All Categories
-            <ChevronDown style={{ width: 14, height: 14 }} />
-          </button>
+          {/* All Categories dropdown */}
+          <div ref={categoriesMenuRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setShowCategoriesMenu(prev => !prev)}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', backgroundColor: '#1648c0', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}
+            >
+              <Menu style={{ width: 16, height: 16 }} />
+              All Categories
+              <ChevronDown style={{ width: 14, height: 14, transition: 'transform 0.2s', transform: showCategoriesMenu ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+            </button>
+            {showCategoriesMenu && (
+              <div style={{ position: 'absolute', top: '100%', left: 0, backgroundColor: 'white', minWidth: 220, borderRadius: '0 0 8px 8px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)', zIndex: 200, padding: '8px 0' }}>
+                <Link
+                  to="/shop"
+                  onClick={() => setShowCategoriesMenu(false)}
+                  style={{ display: 'block', padding: '9px 16px', fontSize: 13, color: '#374151', textDecoration: 'none', fontWeight: 600 }}
+                  className="hover:bg-blue-50 hover:text-blue-700"
+                >
+                  All Products
+                </Link>
+                <div style={{ borderTop: '1px solid #f0f0f0', margin: '4px 0' }} />
+                {searchCategories.filter(c => c !== 'All Categories').map(cat => (
+                  <Link
+                    key={cat}
+                    to={`/shop?category=${encodeURIComponent(cat)}`}
+                    onClick={() => setShowCategoriesMenu(false)}
+                    style={{ display: 'block', padding: '9px 16px', fontSize: 13, color: '#374151', textDecoration: 'none' }}
+                    className="hover:bg-blue-50 hover:text-blue-700"
+                  >
+                    {cat}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
           {isAuthenticated && user?.role === 'admin' ? (
             <>
-              <Link to="/admin/products" style={{ color: '#bdd7ff', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:text-white hover:bg-white/10">Products</Link>
-              <Link to="/admin/categories" style={{ color: '#bdd7ff', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:text-white hover:bg-white/10">Categories</Link>
-              <Link to="/admin/orders" style={{ color: '#bdd7ff', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:text-white hover:bg-white/10">Orders</Link>
+              <Link to="/admin/products" style={{ color: 'white', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:bg-white/10">Products</Link>
+              <Link to="/admin/categories" style={{ color: 'white', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:bg-white/10">Categories</Link>
+              <Link to="/admin/orders" style={{ color: 'white', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:bg-white/10">Orders</Link>
             </>
           ) : (
             <>
-              <Link to="/" style={{ color: '#bdd7ff', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:text-white hover:bg-white/10">Home</Link>
-              <Link to="/shop" style={{ color: '#bdd7ff', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:text-white hover:bg-white/10">Shop</Link>
-              <Link to={`/shop?category=${encodeURIComponent('Electronic Gadget')}`} style={{ color: '#bdd7ff', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:text-white hover:bg-white/10">Electronics</Link>
-              <Link to={`/shop?category=${encodeURIComponent('Home & Kitchen Appliances')}`} style={{ color: '#bdd7ff', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:text-white hover:bg-white/10">Home & Kitchen</Link>
-              <Link to={`/shop?category=${encodeURIComponent('Made In Rwanda')}`} style={{ color: '#fde68a', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 700 }} className="hover:text-yellow-200 hover:bg-white/10">🇷🇼 Made In Rwanda</Link>
-              <Link to="/about" style={{ color: '#bdd7ff', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:text-white hover:bg-white/10">About</Link>
-              <Link to="/contact" style={{ color: '#bdd7ff', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:text-white hover:bg-white/10">Contact</Link>
+              <Link to="/" style={{ color: 'white', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:bg-white/10">Home</Link>
+              <Link to="/shop" style={{ color: 'white', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:bg-white/10">Shop</Link>
+              <Link to={`/shop?category=${encodeURIComponent('Electronic Gadget')}`} style={{ color: 'white', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:bg-white/10">Electronics</Link>
+              <Link to={`/shop?category=${encodeURIComponent('Home & Kitchen Appliances')}`} style={{ color: 'white', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:bg-white/10">Home & Kitchen</Link>
+              <Link to={`/shop?category=${encodeURIComponent('Made In Rwanda')}`} style={{ color: '#fde68a', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 700 }} className="hover:bg-white/10">🇷🇼 Made In Rwanda</Link>
+              <Link to="/about" style={{ color: 'white', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:bg-white/10">About</Link>
+              <Link to="/contact" style={{ color: 'white', padding: '10px 16px', fontSize: 13, textDecoration: 'none', fontWeight: 600 }} className="hover:bg-white/10">Contact</Link>
             </>
           )}
         </div>
@@ -151,10 +199,16 @@ const Header = () => {
       {isMenuOpen && (
         <div style={{ backgroundColor: 'white', borderTop: '1px solid #e0e7ff' }} className="md:hidden">
           <div className="px-4 py-3">
-            <input type="text" placeholder="Search products..." style={{ width: '100%', padding: '10px 16px', borderRadius: 4, border: '1px solid #e0e7ff', outline: 'none', fontSize: 14, marginBottom: 12 }} />
+            <form onSubmit={(e) => { handleSearch(e); setIsMenuOpen(false); }} style={{ display: 'flex', marginBottom: 12, gap: 8 }}>
+              <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search products..." style={{ flex: 1, padding: '10px 16px', borderRadius: 4, border: '1px solid #e0e7ff', outline: 'none', fontSize: 14 }} />
+              <button type="submit" style={{ backgroundColor: '#1a56db', color: 'white', padding: '0 16px', borderRadius: 4, border: 'none', cursor: 'pointer' }}>
+                <Search style={{ width: 16, height: 16 }} />
+              </button>
+            </form>
             <nav className="flex flex-col">
               {[
                 { label: 'Home', to: '/' }, { label: 'Shop', to: '/shop' },
+                { label: 'My Orders', to: '/orders' },
                 { label: 'Electronics', to: `/shop?category=${encodeURIComponent('Electronic Gadget')}` },
                 { label: 'Home & Kitchen', to: `/shop?category=${encodeURIComponent('Home & Kitchen Appliances')}` },
                 { label: '🇷🇼 Made In Rwanda', to: `/shop?category=${encodeURIComponent('Made In Rwanda')}` },
