@@ -22,18 +22,18 @@ const Footer = () => {
   return (
     <footer style={{ fontFamily: "'Nunito', 'Segoe UI', sans-serif" }}>
       {/* Trust Strip */}
-      <div style={{ backgroundColor: '#1a56db' }}>
+      <div style={{ backgroundColor: '#f8fafc', borderTop: '1px solid #e0e7ff' }}>
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
             {[
-              { icon: <Truck style={{ width: 18, height: 18 }} />, text: 'Free Nationwide Delivery' },
-              { icon: <Shield style={{ width: 18, height: 18 }} />, text: '100% Secure Payments' },
-              { icon: <RefreshCw style={{ width: 18, height: 18 }} />, text: 'Easy Returns & Exchanges' },
-              { icon: <Award style={{ width: 18, height: 18 }} />, text: 'Quality Guaranteed' },
+              { icon: <Truck style={{ width: 20, height: 20, color: '#1a56db' }} />, text: 'Free Nationwide Delivery' },
+              { icon: <Shield style={{ width: 20, height: 20, color: '#1a56db' }} />, text: '100% Secure Payments' },
+              { icon: <RefreshCw style={{ width: 20, height: 20, color: '#1a56db' }} />, text: 'Easy Returns & Exchanges' },
+              { icon: <Award style={{ width: 20, height: 20, color: '#1a56db' }} />, text: 'Quality Guaranteed' },
             ].map((item, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'white', padding: '10px 16px', borderRight: i < 3 ? '1px solid rgba(255,255,255,0.25)' : 'none' }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, color: '#0a1628', padding: '10px 16px', borderRight: i < 3 ? '1px solid #e0e7ff' : 'none' }}>
                 {item.icon}
-                <span style={{ fontSize: 13, fontWeight: 700 }}>{item.text}</span>
+                <span style={{ fontSize: 14, fontWeight: 700 }}>{item.text}</span>
               </div>
             ))}
           </div>

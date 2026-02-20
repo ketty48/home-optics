@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight, Truck, Shield, HeadphonesIcon, Star,
-  ChevronRight, Flame, Gift,Tag
+  ChevronRight, Flame, Gift, Tag, ChevronLeft
 } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { Product, Category } from '../types';
 import apiClient from '../utils/api';
-import { motion } from 'framer-motion';
+import Slider from 'react-slick';
 
 const categoryIcons: Record<string, string> = {
   'Electronic Gadget': '📱',
@@ -52,12 +52,61 @@ const bannerSlides = [
   },
 ];
 
+// Custom Arrow Components for Slider
+const NextArrow = (props: any) => {
+  const { onClick, className } = props;
+  // Do not render the arrow if it's disabled (e.g., at the end of a non-infinite slider)
+  if (className?.includes('slick-disabled')) {
+    return null;
+  }
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        position: 'absolute', top: '50%', right: '20px',
+        transform: 'translateY(-50%)', zIndex: 2,
+        background: 'rgba(255, 255, 255, 0.7)', border: 'none',
+        borderRadius: '50%', width: '40px', height: '40px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        transition: 'background-color 0.2s'
+      }}
+      className="hover:bg-white"
+    >
+      <ChevronRight style={{ color: '#0a1628' }} />
+    </button>
+  );
+};
+
+const PrevArrow = (props: any) => {
+  const { onClick, className } = props;
+  if (className?.includes('slick-disabled')) {
+    return null;
+  }
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        position: 'absolute', top: '50%', left: '20px',
+        transform: 'translateY(-50%)', zIndex: 2,
+        background: 'rgba(255, 255, 255, 0.7)', border: 'none',
+        borderRadius: '50%', width: '40px', height: '40px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        transition: 'background-color 0.2s'
+      }}
+      className="hover:bg-white"
+    >
+      <ChevronLeft style={{ color: '#0a1628' }} />
+    </button>
+  );
+};
+
 const Home = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [flashDeals, setFlashDeals] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeBanner, setActiveBanner] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -103,16 +152,39 @@ const Home = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    const t = setInterval(() => setActiveBanner(p => (p + 1) % bannerSlides.length), 5000);
-    return () => clearInterval(t);
-  }, []);
+  const sliderSettings = {
+    dots: true,
+    fade: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 5000,
+    arrows: true,
+    nextArrow: <NextArrow />,
+    prevArrow: <PrevArrow />,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        }
+      },
+      {
+        breakpoint: 600,
+        settings: {
+          arrows: false,
+        }
+      }
+    ]
+  };
 
-  const slide = bannerSlides[activeBanner];
   const cats = categories.length > 0 ? categories : fallbackCategories;
 
   return (
-    <div style={{ backgroundColor: '#f0f4ff', fontFamily: "'Nunito', 'Segoe UI', sans-serif" }}>
+    <div style={{ backgroundColor: '#f8fafc', fontFamily: "'Nunito', 'Segoe UI', sans-serif" }}>
 
       {/* ══════════════════════════════════════
           HERO — Sidebar + Banner + Mini panels
@@ -140,45 +212,38 @@ const Home = () => {
 
           {/* Hero Banner */}
           <div style={{ borderRadius: 10, overflow: 'hidden', position: 'relative', minHeight: 340 }}>
-            <motion.div
-              key={activeBanner}
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.45 }}
-              style={{ background: slide.bg, minHeight: 340, padding: '40px 44px', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}
-            >
-              <div style={{ position: 'absolute', right: -30, top: -30, width: 260, height: 260, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.06)' }} />
-              <div style={{ position: 'absolute', right: 80, bottom: -60, width: 180, height: 180, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)' }} />
-
-              <span style={{ display: 'inline-block', backgroundColor: 'rgba(255,255,255,0.18)', color: 'white', padding: '4px 14px', borderRadius: 20, fontSize: 12, fontWeight: 800, marginBottom: 16, width: 'fit-content', backdropFilter: 'blur(10px)' }}>
-                {slide.tag}
-              </span>
-              <h1 style={{ fontSize: 46, fontWeight: 900, color: 'white', lineHeight: 1.1, marginBottom: 8 }}>{slide.title}</h1>
-              <p style={{ fontSize: 20, color: 'rgba(255,255,255,0.9)', fontWeight: 700, marginBottom: 12 }}>{slide.subtitle}</p>
-              <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 14, maxWidth: 400, marginBottom: 28, lineHeight: 1.65 }}>{slide.desc}</p>
-              <Link
-                to="/shop"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, backgroundColor: 'white', color: '#1a56db', padding: '12px 28px', borderRadius: 6, fontWeight: 800, fontSize: 15, textDecoration: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.18)', width: 'fit-content', transition: 'transform 0.2s' }}
-                className="hover:scale-105"
-              >
-                {slide.cta} <ArrowRight style={{ width: 17, height: 17 }} />
-              </Link>
-
-              {/* Dots */}
-              <div style={{ position: 'absolute', bottom: 18, right: 20, display: 'flex', gap: 6 }}>
-                {bannerSlides.map((_, i) => (
-                  <button key={i} onClick={() => setActiveBanner(i)} style={{ width: i === activeBanner ? 22 : 8, height: 8, borderRadius: 4, backgroundColor: i === activeBanner ? 'white' : 'rgba(255,255,255,0.45)', border: 'none', cursor: 'pointer', transition: 'all 0.3s' }} />
-                ))}
-              </div>
-            </motion.div>
+            {/* @ts-ignore */}
+            <Slider {...sliderSettings}>
+              {bannerSlides.map((slide, index) => (
+                <div key={index} style={{ outline: 'none' }}>
+                  <div className="flex flex-col justify-center p-6 md:p-12 relative overflow-hidden min-h-[340px]" style={{ background: slide.bg }}>
+                    <div style={{ position: 'absolute', right: -30, top: -30, width: 260, height: 260, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.06)' }} />
+                    <div style={{ position: 'absolute', right: 80, bottom: -60, width: 180, height: 180, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)' }} />
+                    <span style={{ display: 'inline-block', backgroundColor: 'rgba(255,255,255,0.18)', color: 'white', padding: '4px 14px', borderRadius: 20, fontSize: 12, fontWeight: 800, marginBottom: 16, width: 'fit-content', backdropFilter: 'blur(10px)' }}>
+                      {slide.tag}
+                    </span>
+                    <h1 className="text-3xl md:text-5xl font-black text-white mb-2 leading-tight">{slide.title}</h1>
+                    <p className="text-lg md:text-xl font-bold text-white/90 mb-3">{slide.subtitle}</p>
+                    <p className="text-sm md:text-base text-white/70 max-w-md mb-7 leading-relaxed">{slide.desc}</p>
+                    <Link
+                      to="/shop"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 8, backgroundColor: 'white', color: '#1a56db', padding: '12px 28px', borderRadius: 6, fontWeight: 800, fontSize: 15, textDecoration: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.18)', width: 'fit-content', transition: 'transform 0.2s' }}
+                      className="hover:scale-105"
+                    >
+                      {slide.cta} <ArrowRight style={{ width: 17, height: 17 }} />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </Slider>
           </div>
 
           {/* Mini Promo Panels */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} className="hidden lg:flex">
             {[
-              { label: '🔥 Flash Deals', desc: 'Today only', bg: '#fff0f0', border: '#fecaca', color: '#dc2626', link: '/shop?sort=discount' },
-              { label: '✨ New Arrivals', desc: 'Just landed', bg: '#eff6ff', border: '#bfdbfe', color: '#1a56db', link: '/shop?sort=newest' },
-              { label: '🇷🇼 Made in RW', desc: 'Support local', bg: '#f0fdf4', border: '#bbf7d0', color: '#16a34a', link: `/shop?category=${encodeURIComponent('Made In Rwanda')}` },
+              { label: '🔥 Flash Deals', desc: 'Today only', bg: 'white', border: '#e2e8f0', color: '#dc2626', link: '/shop?sort=discount' },
+              { label: '✨ New Arrivals', desc: 'Just landed', bg: 'white', border: '#e2e8f0', color: '#1a56db', link: '/shop?sort=newest' },
+              { label: '🇷🇼 Made in RW', desc: 'Support local', bg: 'white', border: '#e2e8f0', color: '#16a34a', link: `/shop?category=${encodeURIComponent('Made In Rwanda')}` },
             ].map((panel, i) => (
               <Link key={i} to={panel.link} style={{ backgroundColor: panel.bg, border: `1px solid ${panel.border}`, borderRadius: 8, padding: '14px 16px', textDecoration: 'none', display: 'block', transition: 'all 0.2s' }} className="hover:shadow-md hover:scale-[1.02]">
                 <div style={{ fontWeight: 800, fontSize: 14, color: panel.color }}>{panel.label}</div>
@@ -354,15 +419,15 @@ const Home = () => {
       <section className="max-w-7xl mx-auto px-4 pb-6">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
           {[
-            { title: '🇷🇼 Made in Rwanda', desc: 'Support local businesses', link: `/shop?category=${encodeURIComponent('Made In Rwanda')}`, bg: 'linear-gradient(135deg, #1d4a2c, #16a34a)', btn: 'Shop Local' },
-            { title: '🎵 Musical Instruments', desc: 'For every musician', link: `/shop?category=${encodeURIComponent('Musical Instrument')}`, bg: 'linear-gradient(135deg, #0a1628, #1a56db)', btn: 'Explore Now' },
-            { title: '💄 Personal Care', desc: 'Look & feel your best', link: `/shop?category=${encodeURIComponent('Personal Care')}`, bg: 'linear-gradient(135deg, #4a0a6a, #9333ea)', btn: 'Shop Beauty' },
+            { title: '🇷🇼 Made in Rwanda', desc: 'Support local businesses', link: `/shop?category=${encodeURIComponent('Made In Rwanda')}`, accent: '#16a34a', btn: 'Shop Local' },
+            { title: '🎵 Musical Instruments', desc: 'For every musician', link: `/shop?category=${encodeURIComponent('Musical Instrument')}`, accent: '#1a56db', btn: 'Explore Now' },
+            { title: '💄 Personal Care', desc: 'Look & feel your best', link: `/shop?category=${encodeURIComponent('Personal Care')}`, accent: '#9333ea', btn: 'Shop Beauty' },
           ].map((promo, i) => (
-            <div key={i} style={{ background: promo.bg, borderRadius: 10, padding: '24px 20px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', right: -16, bottom: -16, width: 90, height: 90, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)' }} />
-              <h3 style={{ fontWeight: 800, fontSize: 17, marginBottom: 6 }}>{promo.title}</h3>
-              <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 13, marginBottom: 16 }}>{promo.desc}</p>
-              <Link to={promo.link} style={{ display: 'inline-block', backgroundColor: 'rgba(255,255,255,0.2)', color: 'white', padding: '7px 18px', borderRadius: 5, fontSize: 13, fontWeight: 700, textDecoration: 'none' }} className="hover:bg-white/30">
+            <div key={i} style={{ backgroundColor: 'white', borderRadius: 10, padding: '24px 20px', borderTop: `4px solid ${promo.accent}`, boxShadow: '0 2px 12px rgba(0,0,0,0.04)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', right: -10, bottom: -10, width: 80, height: 80, borderRadius: '50%', backgroundColor: `${promo.accent}10` }} />
+              <h3 style={{ fontWeight: 800, fontSize: 17, marginBottom: 6, color: '#0f172a' }}>{promo.title}</h3>
+              <p style={{ color: '#64748b', fontSize: 13, marginBottom: 16 }}>{promo.desc}</p>
+              <Link to={promo.link} style={{ display: 'inline-block', backgroundColor: 'transparent', color: promo.accent, border: `1px solid ${promo.accent}`, padding: '7px 18px', borderRadius: 5, fontSize: 13, fontWeight: 700, textDecoration: 'none' }} className="hover:bg-gray-50">
                 {promo.btn} →
               </Link>
             </div>
