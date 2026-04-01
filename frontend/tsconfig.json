@@ -21,6 +21,6 @@
     },
     "types": ["vite/client"]
   },
-  "include": ["src"],
+  "include": ["src", "../backend/src/models/Order.ts", "../backend/src/controllers/orderController.ts", "../backend/src/routes/orderRoutes.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
