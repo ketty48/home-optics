@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
+
 import { ShoppingCart, User, Search, Menu, X, ChevronDown, Package } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
