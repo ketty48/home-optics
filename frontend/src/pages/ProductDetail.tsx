@@ -133,7 +133,7 @@ const ProductDetail = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, alignItems: 'start' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
 
           {/* ── LEFT: Image Gallery ── */}
           <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
@@ -230,7 +230,7 @@ const ProductDetail = () => {
               </Link>
 
               {/* Product Name */}
-              <h1 style={{ fontSize: 28, fontWeight: 900, color: '#0a1628', lineHeight: 1.2, marginBottom: 12 }}>
+              <h1 className="text-2xl sm:text-3xl" style={{ fontWeight: 900, color: '#0a1628', lineHeight: 1.2, marginBottom: 12 }}>
                 {product.name}
               </h1>
 
@@ -292,7 +292,7 @@ const ProductDetail = () => {
               </div>
 
               {/* Quantity + Add to Cart + Wishlist */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+              <div className="flex flex-wrap items-center gap-2.5" style={{ marginBottom: 14 }}>
                 {/* Qty stepper */}
                 <div style={{ display: 'flex', alignItems: 'center', border: '2px solid #e0e7ff', borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
                   <button
@@ -318,8 +318,8 @@ const ProductDetail = () => {
                 <button
                   onClick={handleAddToCart}
                   disabled={product.stock <= 0}
+                  className="flex-1 min-w-[160px]"
                   style={{
-                    flex: 1,
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                     backgroundColor: addedToCart ? '#16a34a' : (product.stock > 0 ? '#1a56db' : '#e2e8f0'),
                     color: product.stock > 0 ? 'white' : '#94a3b8',

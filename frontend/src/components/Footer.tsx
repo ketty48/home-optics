@@ -24,14 +24,14 @@ const Footer = () => {
       {/* Trust Strip */}
       <div style={{ backgroundColor: '#f8fafc', borderTop: '1px solid #e0e7ff' }}>
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+          <div className="grid grid-cols-2 md:grid-cols-4">
             {[
               { icon: <Truck style={{ width: 20, height: 20, color: '#1a56db' }} />, text: 'Free Nationwide Delivery' },
               { icon: <Shield style={{ width: 20, height: 20, color: '#1a56db' }} />, text: '100% Secure Payments' },
               { icon: <RefreshCw style={{ width: 20, height: 20, color: '#1a56db' }} />, text: 'Easy Returns & Exchanges' },
               { icon: <Award style={{ width: 20, height: 20, color: '#1a56db' }} />, text: 'Quality Guaranteed' },
             ].map((item, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, color: '#0a1628', padding: '10px 16px', borderRight: i < 3 ? '1px solid #e0e7ff' : 'none' }}>
+              <div key={i} className={i % 2 === 0 ? 'border-r border-blue-100' : ''} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, color: '#0a1628', padding: '10px 16px' }}>
                 {item.icon}
                 <span style={{ fontSize: 14, fontWeight: 700 }}>{item.text}</span>
               </div>
@@ -43,7 +43,7 @@ const Footer = () => {
       {/* Main Footer */}
       <div style={{ backgroundColor: '#0a1628' }}>
         <div className="max-w-7xl mx-auto px-4 py-12">
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1.5fr', gap: 36 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1.5fr] gap-8 lg:gap-9">
 
             {/* Brand */}
             <div>
@@ -162,7 +162,7 @@ const Footer = () => {
 
       {/* Bottom Bar */}
       <div style={{ backgroundColor: '#060e1a', borderTop: '1px solid #1e293b' }}>
-        <div className="max-w-7xl mx-auto px-4 py-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p style={{ color: '#475569', fontSize: 12 }}>© 2026 Home Optics Rwanda — All Rights Reserved</p>
           <div style={{ display: 'flex', gap: 16 }}>
             {['Privacy Policy', 'Terms of Use', 'Cookies'].map(l => (

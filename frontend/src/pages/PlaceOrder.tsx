@@ -22,8 +22,8 @@ const PlaceOrder = () => {
   const itemsPrice = getTotalPrice();
   // The backend will ultimately set the final shipping price. This is for display purposes.
   const shippingPrice = shippingAddress?.country === 'Rwanda' ? 0 : 5000; // Example shipping cost
-  const taxPrice = Math.round(0.18 * itemsPrice); // 18% VAT
-  const totalPrice = itemsPrice + shippingPrice + taxPrice;
+  const taxPrice = 0; // Tax is included in product prices
+  const totalPrice = itemsPrice + shippingPrice;
 
   useEffect(() => {
     const storedShippingAddress = localStorage.getItem('shippingAddress');
@@ -237,10 +237,6 @@ const PlaceOrder = () => {
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping</span>
                   <span className="font-medium text-gray-900">Fr {shippingPrice.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Tax (18%)</span>
-                  <span className="font-medium text-gray-900">Fr {taxPrice.toLocaleString()}</span>
                 </div>
                 <div className="border-t border-gray-200 pt-4 mt-4 flex justify-between font-bold text-lg text-gray-900">
                   <span>Total</span>

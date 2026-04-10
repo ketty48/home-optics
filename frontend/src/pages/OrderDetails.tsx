@@ -257,10 +257,6 @@ const OrderDetails = () => {
                   <span>Shipping</span>
                   <span>Fr {order.shippingPrice.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Tax</span>
-                  <span>Fr {order.taxPrice.toLocaleString()}</span>
-                </div>
                 <div className="border-t border-gray-200 pt-4 flex justify-between font-bold text-lg text-gray-900">
                   <span>Total</span>
                   <span className="text-primary-600">Fr {order.totalPrice.toLocaleString()}</span>

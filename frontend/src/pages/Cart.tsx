@@ -40,7 +40,7 @@ const Cart = () => {
           <p style={{ fontSize: 13, color: '#94a3b8' }}>{totalItems} {totalItems === 1 ? 'item' : 'items'} in your cart</p>
         </div>
 
-        <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
 
           {/* ── LEFT: Cart Items ── */}
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -149,7 +149,7 @@ const Cart = () => {
           </div>
 
           {/* ── RIGHT: Order Summary ── */}
-          <div style={{ width: 320, flexShrink: 0 }}>
+          <div className="w-full lg:w-80 flex-shrink-0">
             <div style={{ backgroundColor: 'white', borderRadius: 12, border: '1.5px solid #e0e7ff', padding: 24, boxShadow: '0 2px 16px rgba(26,86,219,0.08)', position: 'sticky', top: 80 }}>
               <h2 style={{ fontSize: 18, fontWeight: 900, color: '#0a1628', marginBottom: 20 }}>Order Summary</h2>
 
@@ -165,7 +165,7 @@ const Cart = () => {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b' }}>
                   <span>Tax</span>
-                  <span style={{ color: '#94a3b8', fontSize: 12, fontStyle: 'italic' }}>Calculated at checkout</span>
+                  <span style={{ color: '#94a3b8', fontSize: 12, fontStyle: 'italic' }}>Included in price</span>
                 </div>
               </div>
 

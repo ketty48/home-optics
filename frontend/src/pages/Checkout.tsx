@@ -211,13 +211,9 @@ const Checkout = () => {
                     <span>Shipping</span>
                     <span className={isFreeShipping ? 'text-green-600 font-medium' : ''}>{isFreeShipping ? 'Free' : 'Fr 5,000'}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Tax (18%)</span>
-                    <span>Fr {Math.round(0.18 * itemsPrice).toLocaleString()}</span>
-                  </div>
                   <div className="flex justify-between font-bold text-gray-900 text-base pt-2 border-t border-gray-100 mt-2">
                     <span>Total</span>
-                    <span className="text-blue-600">Fr {(itemsPrice + (isFreeShipping ? 0 : 5000) + Math.round(0.18 * itemsPrice)).toLocaleString()}</span>
+                    <span className="text-blue-600">Fr {(itemsPrice + (isFreeShipping ? 0 : 5000)).toLocaleString()}</span>
                   </div>
                 </div>
               </>

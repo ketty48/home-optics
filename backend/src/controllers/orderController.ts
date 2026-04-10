@@ -360,6 +360,38 @@ export const updateOrderToDelivered = async (req: AuthRequest, res: Response): P
   }
 };
 
+// @desc    Update order status (admin)
+// @route   PUT /api/orders/:id/status
+// @access  Private/Admin
+export const updateOrderStatus = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { status } = req.body;
+    const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+
+    if (!validStatuses.includes(status)) {
+      res.status(400).json({ success: false, message: 'Invalid status value' });
+      return;
+    }
+
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      res.status(404).json({ success: false, message: 'Order not found' });
+      return;
+    }
+
+    order.status = status;
+    if (status === 'Delivered') {
+      order.isDelivered = true;
+      order.deliveredAt = new Date();
+    }
+
+    const updatedOrder = await order.save();
+    res.status(200).json({ success: true, data: updatedOrder });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Cancel order
 // @route   PUT /api/orders/:id/cancel
 // @access  Private
