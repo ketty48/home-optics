@@ -5,6 +5,7 @@ import {
   getMyOrders,
   getOrders,
   updateOrderToDelivered,
+  updateOrderStatus,
   cancelOrder,
   retryPayment,
   getGuestOrders,
@@ -32,5 +33,6 @@ router.route('/:id/cancel').put(protect, cancelOrder);
 // These routes require a user to be logged in and have an 'admin' role.
 router.route('/').get(protect, authorize('admin'), getOrders);
 router.route('/:id/deliver').put(protect, authorize('admin'), updateOrderToDelivered);
+router.route('/:id/status').put(protect, authorize('admin'), updateOrderStatus);
 
 export default router;

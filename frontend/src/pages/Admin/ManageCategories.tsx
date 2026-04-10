@@ -56,12 +56,12 @@ const ManageCategories = () => {
   if (loading) return <div className="p-12 text-center">Loading...</div>;
 
   return (
-    <div className="container-custom py-12">
-      <h1 className="text-3xl font-bold mb-8">Manage Categories</h1>
+    <div className="p-3 sm:p-6 max-w-2xl w-full">
+      <h1 className="text-xl sm:text-2xl font-bold mb-5 text-gray-900">Categories</h1>
 
-      <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
-        <h2 className="text-lg font-semibold mb-4">Add New Category</h2>
-        <form onSubmit={handleAddCategory} className="flex gap-4">
+      <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm mb-5">
+        <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Add New Category</h2>
+        <form onSubmit={handleAddCategory} className="flex gap-2 sm:gap-4">
           <input
             type="text"
             value={newCategory}
@@ -75,7 +75,7 @@ const ManageCategories = () => {
         </form>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>

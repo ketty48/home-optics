@@ -144,7 +144,8 @@ const Orders = () => {
         </div>
       ) : orders.length > 0 ? (
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Desktop table */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -184,6 +185,32 @@ const Orders = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+          {/* Mobile cards */}
+          <div className="sm:hidden divide-y divide-gray-100">
+            {orders.map((order) => (
+              <div key={order._id} className="p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-gray-900 text-sm">#{order._id.slice(-6).toUpperCase()}</span>
+                  <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${order.status === 'Delivered' ? 'bg-green-100 text-green-800' : order.status === 'Cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>{order.status}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</span>
+                  <span className="font-semibold text-gray-900">Fr {order.totalPrice.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  {order.isPaid ? <span className="text-green-600 flex items-center gap-1 text-xs"><CheckCircle size={13} /> Paid</span> : <span className="text-red-500 flex items-center gap-1 text-xs"><XCircle size={13} /> Not Paid</span>}
+                  <div className="flex items-center gap-3">
+                    <Link to={`/order/${order._id}`} className="text-blue-600 flex items-center gap-1 text-xs font-semibold"><Eye size={14} /> Details</Link>
+                    {!order.isPaid && order.paymentMethod === 'Online' && order.status !== 'Cancelled' && (
+                      <button onClick={() => handlePayNow(order._id)} disabled={payingId === order._id} className="text-green-600 flex items-center gap-1 text-xs font-semibold disabled:opacity-50">
+                        {payingId === order._id ? <Loader size={13} className="animate-spin" /> : <><CreditCard size={13} /> Pay Now</>}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
           {isAuthenticated && totalPages > 1 && (
             <div className="bg-white px-4 py-4 flex items-center justify-center border-t border-gray-200">

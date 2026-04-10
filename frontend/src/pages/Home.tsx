@@ -190,7 +190,7 @@ const Home = () => {
           HERO — Sidebar + Banner + Mini panels
       ══════════════════════════════════════ */}
       <section className="max-w-7xl mx-auto px-4 py-4">
-        <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr 200px', gap: 12, alignItems: 'start' }}>
+        <div className="grid gap-3 items-start grid-cols-1 md:grid-cols-[220px_1fr] lg:grid-cols-[220px_1fr_200px]">
 
           {/* Category Sidebar */}
           <div style={{ backgroundColor: 'white', borderRadius: 10, overflow: 'hidden', boxShadow: '0 2px 12px rgba(26,86,219,0.08)' }} className="hidden md:block">
@@ -260,14 +260,14 @@ const Home = () => {
       ══════════════════════════════════════ */}
       <section style={{ backgroundColor: 'white', borderTop: '1px solid #e0e7ff', borderBottom: '1px solid #e0e7ff' }}>
         <div className="max-w-7xl mx-auto px-4 py-3">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+          <div className="grid grid-cols-2 md:grid-cols-4">
             {[
               { icon: <Truck style={{ width: 22, height: 22, color: '#1a56db' }} />, title: 'Free Delivery', desc: 'Across Rwanda' },
               { icon: <Shield style={{ width: 22, height: 22, color: '#1a56db' }} />, title: 'Safe Returns', desc: '7-day policy' },
               { icon: <HeadphonesIcon style={{ width: 22, height: 22, color: '#1a56db' }} />, title: '24/7 Support', desc: 'Always here' },
               { icon: <Tag style={{ width: 22, height: 22, color: '#1a56db' }} />, title: 'Best Prices', desc: 'Guaranteed' },
             ].map((item, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 20px', borderRight: i < 3 ? '1px solid #e0e7ff' : 'none' }}>
+              <div key={i} className={i % 2 === 0 ? 'border-r border-blue-100' : ''} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px' }}>
                 <div style={{ backgroundColor: '#eff6ff', padding: 8, borderRadius: 8 }}>{item.icon}</div>
                 <div>
                   <div style={{ fontWeight: 800, fontSize: 13, color: '#0a1628' }}>{item.title}</div>
@@ -290,7 +290,7 @@ const Home = () => {
               View All <ChevronRight style={{ width: 15, height: 15 }} />
             </Link>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-3">
             {cats.slice(0, 5).map((cat) => (
               <Link
                 key={cat._id}
@@ -372,7 +372,7 @@ const Home = () => {
           FLASH DEAL STRIP
       ══════════════════════════════════════ */}
       <section className="max-w-7xl mx-auto px-4 pb-6">
-        <div style={{ background: 'linear-gradient(135deg, #0a1628 0%, #1a56db 100%)', borderRadius: 10, padding: '20px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 4px 16px rgba(26,86,219,0.3)' }}>
+        <div style={{ background: 'linear-gradient(135deg, #0a1628 0%, #1a56db 100%)', borderRadius: 10, padding: '20px 24px', boxShadow: '0 4px 16px rgba(26,86,219,0.3)' }} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <Flame style={{ width: 36, height: 36, color: '#fbbf24' }} />
             <div>
@@ -417,7 +417,7 @@ const Home = () => {
           3-COLUMN PROMO PANELS
       ══════════════════════════════════════ */}
       <section className="max-w-7xl mx-auto px-4 pb-6">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
             { title: '🇷🇼 Made in Rwanda', desc: 'Support local businesses', link: `/shop?category=${encodeURIComponent('Made In Rwanda')}`, accent: '#16a34a', btn: 'Shop Local' },
             { title: '🎵 Musical Instruments', desc: 'For every musician', link: `/shop?category=${encodeURIComponent('Musical Instrument')}`, accent: '#1a56db', btn: 'Explore Now' },
@@ -441,7 +441,7 @@ const Home = () => {
       <section style={{ background: 'linear-gradient(135deg, #0a1628 0%, #1a56db 100%)', padding: '60px 0' }}>
         <div className="max-w-7xl mx-auto px-4" style={{ textAlign: 'center' }}>
           <Gift style={{ width: 44, height: 44, color: '#fbbf24', margin: '0 auto 16px' }} />
-          <h2 style={{ fontSize: 34, fontWeight: 900, color: 'white', marginBottom: 12 }}>Transform Your Home Today</h2>
+          <h2 className="text-2xl sm:text-4xl" style={{ fontWeight: 900, color: 'white', marginBottom: 12 }}>Transform Your Home Today</h2>
           <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 16, marginBottom: 32 }}>
             Rwanda's best marketplace for quality home appliances, electronics & more
           </p>

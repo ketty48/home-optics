@@ -76,15 +76,15 @@ const Profile = () => {
       <div className="max-w-2xl mx-auto space-y-6">
 
         {/* Profile card */}
-        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-100">
+        <div className="bg-white p-4 sm:p-8 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex flex-wrap items-center justify-between mb-6 pb-6 border-b border-gray-100 gap-3">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-2xl font-bold flex-shrink-0">
+              <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-2xl font-bold flex-shrink-0">
                 {user?.firstName?.charAt(0) || <User />}
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{user?.firstName} {user?.lastName}</h1>
-                <p className="text-gray-500 text-sm">{user?.email}</p>
+                <h1 className="text-xl font-bold text-gray-900">{user?.firstName} {user?.lastName}</h1>
+                <p className="text-gray-500 text-sm truncate max-w-[180px] sm:max-w-none">{user?.email}</p>
               </div>
             </div>
             {!editingProfile && (
@@ -99,7 +99,7 @@ const Profile = () => {
 
           {editingProfile ? (
             <form onSubmit={handleSaveProfile} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
                   <input
@@ -174,7 +174,7 @@ const Profile = () => {
         </div>
 
         {/* Change Password card */}
-        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white p-4 sm:p-8 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Lock className="w-5 h-5 text-gray-500" />
