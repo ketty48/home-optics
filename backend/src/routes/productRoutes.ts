@@ -11,6 +11,7 @@ import {
   deleteCategory,
   getAllCategories
 } from '../controllers/productController';
+import { getProductReviews, createReview, deleteReview } from '../controllers/reviewController';
 import { protect, authorize, optionalProtect } from '../middleware/auth';
 
 const router = express.Router();
@@ -30,5 +31,12 @@ router.route('/:id')
   .get(getProduct)
   .put(protect, authorize('admin'), updateProduct)
   .delete(protect, authorize('admin'), deleteProduct);
+
+// Review routes
+router.route('/:productId/reviews')
+  .get(getProductReviews)
+  .post(protect, createReview);
+
+router.delete('/:productId/reviews/:reviewId', protect, deleteReview);
 
 export default router;

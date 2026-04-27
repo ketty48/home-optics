@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { ShoppingCart } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
 
@@ -35,6 +36,24 @@ const Checkout = () => {
   
   // Derived State
   const isFreeShipping = country === 'Rwanda';
+
+  // Guard: empty cart
+  if (items.length === 0) {
+    return (
+      <div style={{ minHeight: '70vh', backgroundColor: '#f0f4ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Nunito','Segoe UI',sans-serif" }}>
+        <div style={{ textAlign: 'center', backgroundColor: 'white', borderRadius: 16, padding: '48px 40px', boxShadow: '0 2px 16px rgba(26,86,219,0.08)', border: '1px solid #e0e7ff', maxWidth: 360 }}>
+          <div style={{ width: 72, height: 72, backgroundColor: '#eff6ff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <ShoppingCart style={{ width: 34, height: 34, color: '#bfdbfe' }} />
+          </div>
+          <h2 style={{ fontSize: 20, fontWeight: 900, color: '#0a1628', marginBottom: 8 }}>Your cart is empty</h2>
+          <p style={{ color: '#94a3b8', fontSize: 14, marginBottom: 24 }}>Add some items before checking out.</p>
+          <Link to="/shop" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, backgroundColor: '#1a56db', color: 'white', padding: '11px 28px', borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+            Go to Shop
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (isAuthenticated && user) {

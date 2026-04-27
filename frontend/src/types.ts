@@ -51,6 +51,19 @@ export interface Product {
   isFlashDeal?: boolean;
 }
 
+export interface Review {
+  _id: string;
+  user: { _id: string; firstName: string; lastName: string };
+  product: string;
+  rating: number;
+  title: string;
+  comment: string;
+  isVerifiedPurchase: boolean;
+  helpfulCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   totalPages: number;

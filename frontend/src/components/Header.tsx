@@ -1,9 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 
-import { ShoppingCart, User, Search, Menu, X, ChevronDown, Package } from 'lucide-react';
+import { ShoppingCart, User, Search, Menu, X, ChevronDown, Package, Heart } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
+import { useWishlistStore } from '../store/wishlistStore';
 import apiClient from '../utils/api';
 
 const Header = () => {
@@ -15,6 +16,7 @@ const Header = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuthStore();
   const totalItems = useCartStore((state) => state.getTotalItems());
+  const totalWishlistItems = useWishlistStore((state) => state.getTotalItems());
 
   const [searchCategories, setSearchCategories] = useState<string[]>(['All Categories']);
 
@@ -96,6 +98,18 @@ const Header = () => {
             <Link to="/orders" style={{ color: '#475569', display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none' }} className="hover:text-blue-600">
               <Package style={{ width: 24, height: 24 }} />
               <span style={{ fontSize: 10, marginTop: 2, fontWeight: 600 }}>Orders</span>
+            </Link>
+
+            <Link to="/wishlist" style={{ color: '#475569', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none' }} className="hover:text-blue-600">
+              <div style={{ position: 'relative' }}>
+                <Heart style={{ width: 24, height: 24 }} />
+                {totalWishlistItems > 0 && (
+                  <span style={{ position: 'absolute', top: -8, right: -8, backgroundColor: '#dc2626', color: 'white', borderRadius: '50%', width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800 }}>
+                    {totalWishlistItems}
+                  </span>
+                )}
+              </div>
+              <span style={{ fontSize: 10, marginTop: 2, fontWeight: 600 }}>Wishlist</span>
             </Link>
 
             <Link to="/cart" style={{ color: '#475569', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none' }} className="hover:text-blue-600">

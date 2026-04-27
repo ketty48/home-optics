@@ -24,6 +24,7 @@ import Orders from './pages/Orders';
 import OrderDetails from './pages/OrderDetails';
 import PlaceOrder from './pages/PlaceOrder';
 import PendingPayments from './pages/PendingPayment';
+import Wishlist from './pages/Wishlist';
 import { useAuthStore } from './store/authStore';
 import AdminRoute from './components/AdminRoute';
 
@@ -74,6 +75,7 @@ function App() {
           <Route path="/pending-payments" element={<PendingPayments />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/order/:id" element={<OrderDetails />} />
+          <Route path="/wishlist" element={<Wishlist />} />
           <Route path="*" element={
             <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center text-center px-4">
               <h1 className="text-6xl font-bold text-gray-200 mb-4">404</h1>

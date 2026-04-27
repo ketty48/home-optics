@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Filter} from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { Product, PaginatedResponse } from '../types';
@@ -7,6 +7,7 @@ import apiClient from '../utils/api';
 import { useAuthStore } from '../store/authStore';
 
 const Shop = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,11 +96,6 @@ const Shop = () => {
 
    const isAdmin = isAuthenticated && user?.role === 'admin';
 
-  const handleAddProduct = () => {
-    // Redirect to the add product page
-    window.location.href = '/admin/products/add';
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container-custom py-8">
@@ -115,7 +111,7 @@ const Shop = () => {
           {/* Filters Sidebar */}
           <div className="lg:w-64">
           {isAdmin && (
-             <button onClick={handleAddProduct} className="btn btn-primary flex items-center space-x-2">Add Product</button>
+             <button onClick={() => navigate('/admin/products/add')} className="btn btn-primary flex items-center space-x-2">Add Product</button>
           )}
             {/* Mobile Filter Toggle */}
             <button

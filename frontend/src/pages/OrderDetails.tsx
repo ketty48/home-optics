@@ -3,6 +3,7 @@ import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CreditCard, Package, Truck, CheckCircle, XCircle, Clock, Loader } from 'lucide-react';
 import apiClient from '../utils/api';
 import { Order, User } from '../types';
+import ConfirmModal from '../components/ConfirmModal';
 import toast from 'react-hot-toast';
 
 const OrderDetails = () => {
@@ -15,6 +16,7 @@ const OrderDetails = () => {
   const [cancelling, setCancelling] = useState(false);
   const [paying, setPaying] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -69,8 +71,7 @@ const OrderDetails = () => {
   }, [location, id, navigate]);
 
   const handleCancelOrder = async () => {
-    if (!window.confirm('Are you sure you want to cancel this order?')) return;
-    
+    setShowCancelModal(false);
     setCancelling(true);
     try {
       const res = await apiClient.put(`/orders/${id}/cancel`);
@@ -277,8 +278,8 @@ const OrderDetails = () => {
 
                 {/* Cancel Button for pending orders */}
                 {order.status === 'Pending' && (
-                  <button 
-                    onClick={handleCancelOrder} 
+                  <button
+                    onClick={() => setShowCancelModal(true)}
                     disabled={cancelling}
                     className="w-full btn bg-red-50 text-red-600 hover:bg-red-100 border-red-200">
                     {cancelling ? 'Cancelling...' : 'Cancel Order'}
@@ -289,6 +290,15 @@ const OrderDetails = () => {
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={showCancelModal}
+        title="Cancel Order"
+        message="Are you sure you want to cancel this order? This action cannot be undone."
+        confirmLabel="Yes, Cancel Order"
+        onConfirm={handleCancelOrder}
+        onCancel={() => setShowCancelModal(false)}
+      />
     </div>
   );
 };
