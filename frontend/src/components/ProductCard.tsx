@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Star } from 'lucide-react';
+import { ShoppingCart, Star, Heart } from 'lucide-react';
 import { useState } from 'react';
 import { Product } from '../types';
 import { useCartStore } from '../store/cartStore';
+import { useWishlistStore } from '../store/wishlistStore';
 import { motion } from 'framer-motion';
 
 interface ProductCardProps {
@@ -12,6 +13,8 @@ interface ProductCardProps {
 const ProductCard = ({ product }: ProductCardProps) => {
   const [added, setAdded] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
+  const { toggleItem, isInWishlist } = useWishlistStore();
+  const wishlisted = isInWishlist(product._id);
 
   // Main image — prefer isMain, fallback to first
   const mainImage =
@@ -35,6 +38,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
     addItem(product);
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
+  };
+
+  const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleItem(product);
   };
 
   return (
@@ -93,6 +102,23 @@ const ProductCard = ({ product }: ProductCardProps) => {
              ⚡ Flash Deal
             </span>
           )}
+
+          {/* Wishlist heart button */}
+          <button
+            onClick={handleToggleWishlist}
+            title={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+            style={{
+              position: 'absolute', bottom: 8, right: 8,
+              width: 30, height: 30, borderRadius: '50%',
+              backgroundColor: wishlisted ? '#fee2e2' : 'white',
+              border: wishlisted ? '1.5px solid #fca5a5' : '1.5px solid #e0e7ff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
+              transition: 'all 0.2s',
+            }}
+          >
+            <Heart style={{ width: 14, height: 14, color: wishlisted ? '#dc2626' : '#94a3b8', fill: wishlisted ? '#dc2626' : 'none' }} />
+          </button>
 
           {/* Featured badge */}
           {/* {product.isFeatured && (

@@ -4,11 +4,13 @@ import { Edit, Trash2, Plus, Search, ShoppingBag } from 'lucide-react';
 import toast from 'react-hot-toast';
 import apiClient from '../../utils/api';
 import { Product } from '../../types';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const ManageProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const fetchProducts = async () => {
     try {
@@ -24,13 +26,14 @@ const ManageProducts = () => {
   useEffect(() => { fetchProducts(); }, []);
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Delete this product?')) return;
     try {
       await apiClient.delete(`/products/${id}`);
       toast.success('Product deleted');
       setProducts((prev) => prev.filter((p) => p._id !== id));
     } catch {
       toast.error('Failed to delete product');
+    } finally {
+      setConfirmId(null);
     }
   };
 
@@ -148,7 +151,7 @@ const ManageProducts = () => {
                           <Link to={`/admin/products/edit/${product._id}`} className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors">
                             <Edit size={15} />
                           </Link>
-                          <button onClick={() => handleDelete(product._id)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors">
+                          <button onClick={() => setConfirmId(product._id)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors">
                             <Trash2 size={15} />
                           </button>
                         </div>
@@ -189,7 +192,7 @@ const ManageProducts = () => {
                     <Link to={`/admin/products/edit/${product._id}`} className="p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors">
                       <Edit size={16} />
                     </Link>
-                    <button onClick={() => handleDelete(product._id)} className="p-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors">
+                    <button onClick={() => setConfirmId(product._id)} className="p-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors">
                       <Trash2 size={16} />
                     </button>
                   </div>
@@ -199,6 +202,15 @@ const ManageProducts = () => {
           </>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={!!confirmId}
+        title="Delete Product"
+        message="Are you sure you want to delete this product? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={() => confirmId && handleDelete(confirmId)}
+        onCancel={() => setConfirmId(null)}
+      />
     </div>
   );
 };

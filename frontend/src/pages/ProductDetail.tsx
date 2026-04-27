@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Product } from '../types';
+import { Product, Review } from '../types';
 import apiClient from '../utils/api';
 import ProductCard from '../components/ProductCard';
 import { formatDistanceToNow } from 'date-fns';
 import {
    ShoppingCart, Star, Minus, Plus,
-  ChevronRight, Truck, Shield, RefreshCw, Heart
+  ChevronRight, Truck, Shield, RefreshCw, Heart, Loader, CheckCircle
 } from 'lucide-react';
 import { useCartStore } from '../store/cartStore';
+import { useWishlistStore } from '../store/wishlistStore';
+import { useAuthStore } from '../store/authStore';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -23,6 +26,16 @@ const ProductDetail = () => {
   const [timeRemaining, setTimeRemaining] = useState('');
 
   const addItem = useCartStore((state) => state.addItem);
+  const { toggleItem, isInWishlist } = useWishlistStore();
+  const { isAuthenticated } = useAuthStore();
+
+  // Reviews
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewTitle, setReviewTitle] = useState('');
+  const [reviewComment, setReviewComment] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [hoverStar, setHoverStar] = useState(0);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -47,15 +60,18 @@ const ProductDetail = () => {
         }
         if (p?.isFlashDeal && p.flashDealEndDate) {
           const endDate = new Date(p.flashDealEndDate);
-
           const interval = setInterval(() => {
             setTimeRemaining(formatDistanceToNow(endDate, { addSuffix: true }));
           }, 1000);
-
-            return () => clearInterval(interval);
-
-
+          return () => clearInterval(interval);
         }
+
+        // Fetch reviews
+        try {
+          const reviewRes = await apiClient.get(`/products/${p._id}/reviews`);
+          setReviews(reviewRes.data.data);
+        } catch (e) { /* reviews not critical */ }
+
       } catch (err) {
         setError('Product not found.');
       } finally {
@@ -80,6 +96,34 @@ const ProductDetail = () => {
       if (product && n > product.stock) return product.stock;
       return n;
     });
+  };
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!product) return;
+    setSubmittingReview(true);
+    try {
+      const res = await apiClient.post(`/products/${product._id}/reviews`, {
+        rating: reviewRating,
+        title: reviewTitle,
+        comment: reviewComment,
+      });
+      setReviews(prev => [res.data.data, ...prev]);
+      setReviewTitle('');
+      setReviewComment('');
+      setReviewRating(5);
+      // Update local product rating display
+      setProduct(prev => prev ? {
+        ...prev,
+        numReviews: prev.numReviews + 1,
+        rating: parseFloat(((prev.rating * prev.numReviews + reviewRating) / (prev.numReviews + 1)).toFixed(1)),
+      } : prev);
+      toast.success('Review submitted!');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to submit review');
+    } finally {
+      setSubmittingReview(false);
+    }
   };
 
   /* ── Loading ── */
@@ -335,10 +379,18 @@ const ProductDetail = () => {
 
                 {/* Wishlist */}
                 <button
-                  style={{ padding: '11px', border: '2px solid #e0e7ff', borderRadius: 8, backgroundColor: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', flexShrink: 0 }}
-                  className="hover:border-blue-400 hover:bg-blue-50"
+                  onClick={() => product && toggleItem(product)}
+                  title={product && isInWishlist(product._id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                  style={{
+                    padding: '11px',
+                    border: product && isInWishlist(product._id) ? '2px solid #fca5a5' : '2px solid #e0e7ff',
+                    borderRadius: 8,
+                    backgroundColor: product && isInWishlist(product._id) ? '#fee2e2' : 'white',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'all 0.2s', flexShrink: 0,
+                  }}
                 >
-                  <Heart style={{ width: 18, height: 18, color: '#94a3b8' }} />
+                  <Heart style={{ width: 18, height: 18, color: product && isInWishlist(product._id) ? '#dc2626' : '#94a3b8', fill: product && isInWishlist(product._id) ? '#dc2626' : 'none' }} />
                 </button>
               </div>
 
@@ -384,6 +436,132 @@ const ProductDetail = () => {
             </div>
           </div>
         )}
+
+        {/* ── Reviews ── */}
+        <div style={{ marginTop: 48, paddingTop: 32, borderTop: '1px solid #e0e7ff' }}>
+          <h2 style={{ fontSize: 22, fontWeight: 900, color: '#0a1628', marginBottom: 24 }}>
+            Customer Reviews {reviews.length > 0 && <span style={{ fontSize: 14, color: '#94a3b8', fontWeight: 600 }}>({reviews.length})</span>}
+          </h2>
+
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
+
+            {/* Review list */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {reviews.length === 0 ? (
+                <div style={{ backgroundColor: 'white', borderRadius: 10, border: '1px solid #e0e7ff', padding: '32px 24px', textAlign: 'center' }}>
+                  <p style={{ color: '#94a3b8', fontSize: 14 }}>No reviews yet. Be the first to review this product!</p>
+                </div>
+              ) : reviews.map((review) => (
+                <div key={review._id} style={{ backgroundColor: 'white', borderRadius: 10, border: '1px solid #e0e7ff', padding: '18px 20px', boxShadow: '0 1px 6px rgba(26,86,219,0.05)' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                        {[1,2,3,4,5].map(s => (
+                          <Star key={s} style={{ width: 14, height: 14, color: s <= review.rating ? '#f59e0b' : '#e2e8f0', fill: s <= review.rating ? '#f59e0b' : '#e2e8f0' }} />
+                        ))}
+                        {review.isVerifiedPurchase && (
+                          <span style={{ backgroundColor: '#dcfce7', color: '#16a34a', fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 20, marginLeft: 4 }}>
+                            ✓ Verified Purchase
+                          </span>
+                        )}
+                      </div>
+                      <p style={{ fontWeight: 800, fontSize: 14, color: '#0a1628', margin: 0 }}>{review.title}</p>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: '#334155', margin: 0 }}>
+                        {review.user.firstName} {review.user.lastName}
+                      </p>
+                      <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <p style={{ fontSize: 14, color: '#475569', lineHeight: 1.65, margin: 0 }}>{review.comment}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Write a review */}
+            <div style={{ backgroundColor: 'white', borderRadius: 10, border: '1px solid #e0e7ff', padding: '20px', boxShadow: '0 2px 12px rgba(26,86,219,0.07)', position: 'sticky', top: 80 }}>
+              <h3 style={{ fontWeight: 800, fontSize: 16, color: '#0a1628', marginBottom: 16, paddingBottom: 12, borderBottom: '2px solid #1a56db' }}>Write a Review</h3>
+
+              {!isAuthenticated ? (
+                <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                  <p style={{ color: '#64748b', fontSize: 14, marginBottom: 12 }}>Sign in to leave a review</p>
+                  <Link to="/login" style={{ display: 'inline-block', backgroundColor: '#1a56db', color: 'white', padding: '9px 24px', borderRadius: 7, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+                    Sign In
+                  </Link>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmitReview} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  {/* Star rating picker */}
+                  <div>
+                    <label style={{ fontSize: 13, fontWeight: 700, color: '#374151', display: 'block', marginBottom: 6 }}>Your Rating</label>
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      {[1,2,3,4,5].map(s => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => setReviewRating(s)}
+                          onMouseEnter={() => setHoverStar(s)}
+                          onMouseLeave={() => setHoverStar(0)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}
+                        >
+                          <Star style={{ width: 24, height: 24, color: s <= (hoverStar || reviewRating) ? '#f59e0b' : '#e2e8f0', fill: s <= (hoverStar || reviewRating) ? '#f59e0b' : '#e2e8f0', transition: 'color 0.1s' }} />
+                        </button>
+                      ))}
+                      <span style={{ fontSize: 13, color: '#64748b', alignSelf: 'center', marginLeft: 4 }}>
+                        {['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][hoverStar || reviewRating]}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: 13, fontWeight: 700, color: '#374151', display: 'block', marginBottom: 6 }}>Title</label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={100}
+                      value={reviewTitle}
+                      onChange={e => setReviewTitle(e.target.value)}
+                      placeholder="Summarize your experience"
+                      style={{ width: '100%', padding: '8px 12px', border: '1.5px solid #e0e7ff', borderRadius: 7, fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+                      onFocus={e => (e.target.style.borderColor = '#1a56db')}
+                      onBlur={e => (e.target.style.borderColor = '#e0e7ff')}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: 13, fontWeight: 700, color: '#374151', display: 'block', marginBottom: 6 }}>Comment</label>
+                    <textarea
+                      required
+                      rows={4}
+                      maxLength={1000}
+                      value={reviewComment}
+                      onChange={e => setReviewComment(e.target.value)}
+                      placeholder="Share your thoughts about this product..."
+                      style={{ width: '100%', padding: '8px 12px', border: '1.5px solid #e0e7ff', borderRadius: 7, fontSize: 14, outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
+                      onFocus={e => (e.target.style.borderColor = '#1a56db')}
+                      onBlur={e => (e.target.style.borderColor = '#e0e7ff')}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={submittingReview}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#1a56db', color: 'white', padding: '10px', borderRadius: 7, border: 'none', fontWeight: 800, fontSize: 14, cursor: submittingReview ? 'not-allowed' : 'pointer', opacity: submittingReview ? 0.7 : 1, transition: 'opacity 0.2s' }}
+                  >
+                    {submittingReview ? (
+                      <><Loader style={{ width: 15, height: 15 }} className="animate-spin" /> Submitting...</>
+                    ) : (
+                      <><CheckCircle style={{ width: 15, height: 15 }} /> Submit Review</>
+                    )}
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* Back to Shop */}
         <div style={{ marginTop: 32, paddingTop: 24, borderTop: '1px solid #e0e7ff' }}>

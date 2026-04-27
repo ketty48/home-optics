@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { Eye, XCircle, CheckCircle, CreditCard, Loader, Search } from 'lucide-react';
+import { Eye, XCircle, CheckCircle, CreditCard, Loader, Search, Mail, Package } from 'lucide-react';
 import apiClient from '../utils/api';
 import { useAuthStore } from '../store/authStore';
 import { Order } from '../types';
@@ -17,6 +17,9 @@ const Orders = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [trackInput, setTrackInput] = useState('');
   const [isTracking, setIsTracking] = useState(false);
+  // true once a guest has successfully searched (so we don't re-show the promo panel)
+  const [guestSearchDone, setGuestSearchDone] = useState(false);
+  const emailInputRef = useRef<HTMLInputElement>(null);
 
   const { isAuthenticated } = useAuthStore();
 
@@ -96,14 +99,41 @@ const Orders = () => {
       } catch (err: any) {
         const message = err.response?.data?.message || 'Could not find orders for this email.';
         setError(message);
-        setOrders([]); // Clear orders list on error
+        setOrders([]);
         toast.error(message);
       } finally {
         setIsTracking(false);
       }
     } else {
-      // Assume it's an Order ID and navigate
+      // Assume it's an Order ID — navigate directly to the detail page
       navigate(`/order/${query}`);
+    }
+  };
+
+  // Called from the guest promo panel's dedicated email input
+  const handleGuestEmailSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = trackInput.trim();
+    if (!email) {
+      emailInputRef.current?.focus();
+      return;
+    }
+    setIsTracking(true);
+    setError('');
+    try {
+      const { data } = await apiClient.post('/orders/guest/track', { email });
+      setOrders(data.data);
+      setGuestSearchDone(true);
+      const newIds = data.data.map((o: Order) => o._id);
+      localStorage.setItem('guestOrderIds', JSON.stringify(newIds));
+      toast.success(`Found ${data.data.length} order(s) for this email.`);
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'No orders found for this email.';
+      setError(message);
+      setOrders([]);
+      toast.error(message);
+    } finally {
+      setIsTracking(false);
     }
   };
 
@@ -113,36 +143,134 @@ const Orders = () => {
     </div>
   );
 
+  // Guest with no orders yet → show prominent email lookup panel
+  const showGuestPanel = !isAuthenticated && orders.length === 0 && !guestSearchDone;
+
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen bg-gray-50">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-        <h1 className="text-3xl font-bold text-gray-900 m-0">My Orders</h1>
-        
+        <h1 className="text-3xl font-bold text-gray-900 m-0">
+          {isAuthenticated ? 'My Orders' : 'Track Your Order'}
+        </h1>
+
+        {/* Top search bar — always visible for quick Order-ID or email lookup */}
         <form onSubmit={handleTrackOrder} className="flex w-full md:w-auto gap-2">
           <input
             type="text"
             value={trackInput}
             onChange={(e) => setTrackInput(e.target.value)}
-            placeholder="Enter Email or Order ID"
-            className="flex-1 md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            placeholder="Enter email or Order ID"
+            className="flex-1 md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
           />
-          <button type="submit" disabled={isTracking} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 w-28 disabled:opacity-60">
-            {isTracking ? <Loader size={18} className="animate-spin" /> : <><Search size={18} /> Track</>}
+          <button
+            type="submit"
+            disabled={isTracking}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 w-28 disabled:opacity-60 text-sm"
+          >
+            {isTracking ? <Loader size={16} className="animate-spin" /> : <><Search size={16} /> Search</>}
           </button>
         </form>
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 text-center">{error}</div>
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 text-center text-sm">{error}</div>
       )}
 
-      {!loading && orders.length === 0 && !error ? (
-        <div className="bg-white p-12 rounded-lg shadow-sm text-center border border-gray-200">
-          <p className="text-gray-600 mb-4">You have no orders listed here.</p>
-          <p className="text-sm text-gray-500 mb-6 max-w-md mx-auto">If you placed an order as a guest, use the search bar above with your Order ID to view its details.</p>
-          <Link to="/shop" className="text-blue-600 hover:underline">Start Shopping</Link>
+      {/* ── Guest promo panel ── */}
+      {showGuestPanel && (
+        <div style={{ fontFamily: "'Nunito','Segoe UI',sans-serif" }}>
+          <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            {/* Header strip */}
+            <div style={{ background: 'linear-gradient(135deg,#1a56db,#3b82f6)', padding: '28px 32px' }}>
+              <div className="flex items-center gap-3 mb-2">
+                <div style={{ backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '50%', padding: 10 }}>
+                  <Package style={{ width: 24, height: 24, color: 'white' }} />
+                </div>
+                <h2 style={{ color: 'white', fontWeight: 900, fontSize: 20, margin: 0 }}>Find Your Order</h2>
+              </div>
+              <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, margin: 0 }}>
+                Enter the email address you used at checkout to view all your orders.
+              </p>
+            </div>
+
+            {/* Form */}
+            <div style={{ padding: '28px 32px' }}>
+              <form onSubmit={handleGuestEmailSearch}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#374151', marginBottom: 6 }}>
+                  Email Address
+                </label>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <div style={{ position: 'relative', flex: 1 }}>
+                    <Mail style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: '#9ca3af', pointerEvents: 'none' }} />
+                    <input
+                      ref={emailInputRef}
+                      type="email"
+                      required
+                      value={trackInput}
+                      onChange={(e) => setTrackInput(e.target.value)}
+                      placeholder="you@example.com"
+                      style={{ width: '100%', paddingLeft: 38, paddingRight: 12, paddingTop: 10, paddingBottom: 10, border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+                      onFocus={e => (e.target.style.borderColor = '#1a56db')}
+                      onBlur={e => (e.target.style.borderColor = '#e5e7eb')}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isTracking}
+                    style={{ backgroundColor: '#1a56db', color: 'white', padding: '10px 20px', borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 14, cursor: isTracking ? 'not-allowed' : 'pointer', opacity: isTracking ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}
+                  >
+                    {isTracking ? <Loader size={15} className="animate-spin" /> : <><Search size={15} /> Find Orders</>}
+                  </button>
+                </div>
+              </form>
+
+              <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 12, color: '#6b7280' }}>Have an Order ID?</span>
+                <button
+                  type="button"
+                  onClick={() => emailInputRef.current?.focus()}
+                  style={{ fontSize: 12, color: '#1a56db', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  onFocus={() => {}}
+                >
+                  Enter it in the search bar above
+                </button>
+              </div>
+
+              {error && (
+                <div style={{ marginTop: 14, backgroundColor: '#fef2f2', border: '1px solid #fee2e2', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#dc2626' }}>
+                  {error}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <p style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: '#9ca3af' }}>
+            Want to save your orders?{' '}
+            <Link to="/register" style={{ color: '#1a56db', fontWeight: 700, textDecoration: 'none' }}>Create an account</Link>
+            {' '}or{' '}
+            <Link to="/login" style={{ color: '#1a56db', fontWeight: 700, textDecoration: 'none' }}>Sign in</Link>
+          </p>
         </div>
-      ) : orders.length > 0 ? (
+      )}
+
+      {/* ── "no results after search" empty state ── */}
+      {!showGuestPanel && orders.length === 0 && !loading && !error && (
+        <div className="bg-white p-12 rounded-lg shadow-sm text-center border border-gray-200">
+          <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Package className="w-8 h-8 text-blue-300" />
+          </div>
+          <p className="text-gray-700 font-semibold mb-2">No orders found</p>
+          <p className="text-sm text-gray-500 mb-6">
+            {isAuthenticated
+              ? "You haven't placed any orders yet."
+              : 'No orders matched that email. Try a different address, or enter your Order ID in the search bar.'}
+          </p>
+          <Link to="/shop" className="text-blue-600 hover:underline text-sm font-semibold">Start Shopping</Link>
+        </div>
+      )}
+
+      {/* ── Orders table ── */}
+      {orders.length > 0 ? (
         <div className="bg-white rounded-lg shadow overflow-hidden">
           {/* Desktop table */}
           <div className="hidden sm:block overflow-x-auto">
@@ -236,5 +364,6 @@ const Orders = () => {
     </div>
   );
 };
+
 
 export default Orders;

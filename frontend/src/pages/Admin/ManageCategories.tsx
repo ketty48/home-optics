@@ -3,11 +3,13 @@ import { Trash2, Plus} from 'lucide-react';
 import toast from 'react-hot-toast';
 import apiClient from '../../utils/api';
 import { Category } from '../../types';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const ManageCategories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [newCategory, setNewCategory] = useState('');
   const [loading, setLoading] = useState(true);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const fetchCategories = async () => {
     try {
@@ -42,14 +44,14 @@ const ManageCategories = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Delete this category?')) {
-      try {
-        await apiClient.delete(`/products/categories/${id}`);
-        setCategories(categories.filter(c => c._id !== id));
-        toast.success('Category deleted');
-      } catch (error) {
-        toast.error('Failed to delete category');
-      }
+    try {
+      await apiClient.delete(`/products/categories/${id}`);
+      setCategories(categories.filter(c => c._id !== id));
+      toast.success('Category deleted');
+    } catch (error) {
+      toast.error('Failed to delete category');
+    } finally {
+      setConfirmId(null);
     }
   };
 
@@ -88,7 +90,7 @@ const ManageCategories = () => {
               <tr key={cat._id}>
                 <td className="px-6 py-4">{cat.name}</td>
                 <td className="px-6 py-4 text-right">
-                  <button onClick={() => handleDelete(cat._id)} className="text-red-600 hover:text-red-800">
+                  <button onClick={() => setConfirmId(cat._id)} className="text-red-600 hover:text-red-800">
                     <Trash2 className="w-5 h-5" />
                   </button>
                 </td>
@@ -97,6 +99,14 @@ const ManageCategories = () => {
           </tbody>
         </table>
       </div>
+      <ConfirmModal
+        isOpen={!!confirmId}
+        title="Delete Category"
+        message="Are you sure you want to delete this category? Products in this category will not be deleted."
+        confirmLabel="Delete"
+        onConfirm={() => confirmId && handleDelete(confirmId)}
+        onCancel={() => setConfirmId(null)}
+      />
     </div>
   );
 };
